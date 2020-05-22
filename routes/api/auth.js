@@ -4,8 +4,7 @@ const bcrypt = require("bcryptjs");
 //auth is custom middleware that authenticates the jwt and adds an id to the req object
 const auth = require("../../middleware/auth");
 const User = require("../../models/User");
-const { check, validationResult } = require("express-validator");
-const config = require("config");
+const { check } = require("express-validator");
 const jwt = require("jsonwebtoken");
 
 // GET api/auth
@@ -26,6 +25,7 @@ router.get("/", auth, async (req, res) => {
 // POST api/auth
 // PUBLIC
 // sign in
+// response: send token to client
 
 router.post(
   "/",
