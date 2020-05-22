@@ -3,11 +3,10 @@ const router = express.Router();
 const { check, validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const config = require("config");
 const User = require("../../models/User");
 require("dotenv").config();
 
-// route: POST users
+// route: POST http://localhost:5000/api/users
 // description: register user
 // access: public
 router.post(
@@ -43,17 +42,18 @@ router.post(
         Then, add the salt to the password and "hash" the password+salt. Then save the password to mongoDB using the imported schema*/
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(password, salt);
+      //when you save, mongoDB returns
       await user.save();
 
-      /* Create a JWT token. config.get("jwtToken") is to pass in the secret. Send the 
-        JWT back to the client via res.json({token}) 
-         */
+      /* When you call .save(), if you do not pass in an _id property, mongoDB will automatically create a _id property. 
+      Create a JWT token which will embed the secret and the payload.user._id */
 
       const payload = {
         user: {
-          id: user.id,
+          id: user._id,
         },
       };
+
       jwt.sign(
         payload,
         process.env.JWT_SECRET,

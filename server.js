@@ -30,6 +30,7 @@ connectDB();
 app.use(express.json({ extended: false }));
 
 app.use("/api/users", require("./routes/api/users"));
+app.use("/api/auth", require("./routes/api/auth"));
 
 /* Setting up the server. Proccess.env.PORT looks for environment variable called PORT.
 Since the app is served by Heroku, Heroku will look in process.env.PORT to serve 
