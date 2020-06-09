@@ -5,11 +5,11 @@ const axios = require("axios");
 
 // PUBLIC
 // purpose: get geocode for mapquest API
-//
+// GET api/geocoding/
 
 router.get("/", async (req, res) => {
-  const city = req.query.city;
-  const state = req.query.state;
+  console.log(req.query);
+  const { city, state } = req.query;
   try {
     //the middleware adds a property called user.id to the req object
     const geocode = await axios.get(process.env.MAPQUEST_URI, {
