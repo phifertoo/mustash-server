@@ -5,6 +5,8 @@ const Listing = require("../../models/Listings");
 const formidable = require("formidable");
 const fs = require("fs");
 const axios = require("axios");
+const AWS = require("aws-sdk");
+const Busboy = require("busboy");
 
 // PRIVATE
 // purpose:list a storage space
@@ -78,6 +80,35 @@ router.post("/", auth, async (req, res) => {
           coordinates: [lng, lat],
         },
       };
+
+      Object.keys(files).map((element) => {
+        console.log(files[element]);
+        const uploadToS3 = (file) => {
+          let s3bucket = new AWS.S3({
+            accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+            secretAccessKey: process.env.AWS_SECRET_KEY,
+            Bucket: "mustash01",
+          });
+          s3bucket.createBucket(function () {
+            const params = {
+              Bucket: "mustash01",
+              Key: element,
+              Body: fs.readFileSync(files[element].path),
+            };
+            s3bucket.upload(params, function (err, data) {
+              if (err) {
+                console.log(err);
+              }
+              console.log(data);
+            });
+          });
+        };
+        const busboy = new Busboy({ headers: req.headers });
+        busboy.on("finish", function () {
+          uploadToS3(fs.readFileSync(files[element].path));
+        });
+        req.pipe(busboy);
+      });
 
       const listing = new Listing(input);
       if (files) {
