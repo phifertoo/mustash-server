@@ -81,34 +81,51 @@ router.post("/", auth, async (req, res) => {
         },
       };
 
+      //____________________________________________________________________saving image to s3____________________________
+      let s3Images = {};
+      let key = 0;
+
       Object.keys(files).map((element) => {
-        console.log(files[element]);
+        key =
+          Math.random().toString(36).substring(2, 15) +
+          Math.random().toString(36).substring(2, 15);
         const uploadToS3 = (file) => {
           let s3bucket = new AWS.S3({
             accessKeyId: process.env.AWS_ACCESS_KEY_ID,
             secretAccessKey: process.env.AWS_SECRET_KEY,
             Bucket: "mustash01",
           });
-          s3bucket.createBucket(function () {
+          s3bucket.createBucket(() => {
             const params = {
               Bucket: "mustash01",
-              Key: element,
-              Body: fs.readFileSync(files[element].path),
+              Key: key,
+              ContentType: "image/jpeg",
+              ACL: "public-read",
+              Body: file,
             };
-            s3bucket.upload(params, function (err, data) {
+            output = s3bucket.upload(params, (err, data) => {
               if (err) {
                 console.log(err);
+              } else {
+                console.log(data);
               }
-              console.log(data);
             });
           });
         };
-        const busboy = new Busboy({ headers: req.headers });
-        busboy.on("finish", function () {
-          uploadToS3(fs.readFileSync(files[element].path));
-        });
-        req.pipe(busboy);
+        // const busboy = new Busboy({ headers: req.headers });
+        // busboy.on("finish", () => {
+        //   uploadToS3(fs.readFileSync(files[element].path));
+        // });
+        // req.pipe(busboy);
+        uploadToS3(fs.readFileSync(files[element].path));
+        s3Images[element] = {};
+        s3Images[
+          element
+        ].url = `https://mustash01.s3-us-west-1.amazonaws.com/${key}`;
+        s3Images[element].name = key;
       });
+
+      //____________________________________________________________________saving listing to mongoDB (includes image)____________________________
 
       const listing = new Listing(input);
       if (files) {
@@ -124,19 +141,21 @@ router.post("/", auth, async (req, res) => {
         //     listing.images[element] = fs.readFileSync(reader.result);
         //   };
         // });
-        listing.images = {};
         Object.keys(files).map((element) => {
           //returns the contents at the blob path
           listing.images[element].data = fs.readFileSync(files[element].path);
           listing.images[element].contentType = files[element].type;
         });
       }
+      //add image paths from S3 to the listing
+      listing.s3Images = s3Images;
       listing.save((err, result) => {
         if (err) {
           return res.status(400).json({
             error: "database error",
           });
         }
+        //add the imageMap urls from aws s3
         res.json(result);
       });
     });

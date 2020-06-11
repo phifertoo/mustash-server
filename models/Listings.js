@@ -37,6 +37,28 @@ const ListingsSchema = new mongoose.Schema({
     image4: { data: Buffer, contentType: String },
     image5: { data: Buffer, contentType: String },
   },
+  s3Images: {
+    image1: {
+      name: { type: String },
+      url: { type: String },
+    },
+    image2: {
+      name: { type: String },
+      url: { type: String },
+    },
+    image3: {
+      name: { type: String },
+      url: { type: String },
+    },
+    image4: {
+      name: { type: String },
+      url: { type: String },
+    },
+    image5: {
+      name: { type: String },
+      url: { type: String },
+    },
+  },
 });
 
 // create the geolocation indexing in mongodb
