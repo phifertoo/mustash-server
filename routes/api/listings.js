@@ -6,7 +6,6 @@ const formidable = require("formidable");
 const fs = require("fs");
 const axios = require("axios");
 const AWS = require("aws-sdk");
-const Busboy = require("busboy");
 
 // PRIVATE
 // purpose:list a storage space
@@ -81,7 +80,7 @@ router.post("/", auth, async (req, res) => {
         },
       };
 
-      //____________________________________________________________________saving image to s3____________________________
+      //____________________________________________________________________upload images to s3____________________________
       let s3Images = {};
       let key = 0;
 
@@ -112,11 +111,6 @@ router.post("/", auth, async (req, res) => {
             });
           });
         };
-        // const busboy = new Busboy({ headers: req.headers });
-        // busboy.on("finish", () => {
-        //   uploadToS3(fs.readFileSync(files[element].path));
-        // });
-        // req.pipe(busboy);
         uploadToS3(fs.readFileSync(files[element].path));
         s3Images[element] = {};
         s3Images[
@@ -134,13 +128,6 @@ router.post("/", auth, async (req, res) => {
         //     error: "Image should be less than 1mb in size",
         //   });
         // }
-        // Object.keys(files).map((element) => {
-        //   let reader = new FileReader();
-        //   reader.readAsDataURL(files[element]); // converts the blob to base64 and calls onload
-        //   reader.onload = function () {
-        //     listing.images[element] = fs.readFileSync(reader.result);
-        //   };
-        // });
         Object.keys(files).map((element) => {
           //returns the contents at the blob path
           listing.images[element].data = fs.readFileSync(files[element].path);
@@ -155,7 +142,6 @@ router.post("/", auth, async (req, res) => {
             error: "database error",
           });
         }
-        //add the imageMap urls from aws s3
         res.json(result);
       });
     });
