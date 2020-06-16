@@ -231,6 +231,10 @@ router.get('/me', async (req, res) => {
 //   }
 // });
 
+// PRVATE
+// purpose: update listing
+// POST api/listing/update
+
 router.post('/update', auth, async (req, res) => {
   try {
     const {
@@ -279,6 +283,10 @@ router.post('/update', auth, async (req, res) => {
   }
 });
 
+// PRVATE
+// purpose: delete listing
+// DELETE api/listing
+
 router.delete('/', auth, async (req, res) => {
   const _id = req._id;
   try {
@@ -289,6 +297,10 @@ router.delete('/', auth, async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
+
+// PRVATE
+// purpose: delete image
+// DELETE api/listing/image
 
 router.delete('/image', auth, async (req, res) => {
   try {
@@ -319,6 +331,10 @@ router.delete('/image', auth, async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
+
+// PRVATE
+// purpose: add image
+// POST api/listing/image
 
 router.post('/image', auth, async (req, res) => {
   let existingListing = {};
@@ -394,6 +410,21 @@ router.post('/image', auth, async (req, res) => {
         res.json(result);
       });
     });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// PRVATE
+// purpose: add image
+// POST api/listing/:seller_id
+
+router.get('/:seller_id', auth, async (req, res) => {
+  console.log(req.params.seller_id);
+  try {
+    const listings = await Listing.find({ user: req.params.seller_id });
+    res.json(listings);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
