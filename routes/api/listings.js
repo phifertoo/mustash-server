@@ -279,6 +279,17 @@ router.post('/update', auth, async (req, res) => {
   }
 });
 
+router.delete('/', auth, async (req, res) => {
+  const _id = req._id;
+  try {
+    await Listing.findOneAndRemove({ _id });
+    //remove user
+    res.send({ msg: 'Listing deleted' });
+  } catch (err) {
+    res.status(500).send('Server Error');
+  }
+});
+
 router.delete('/image', auth, async (req, res) => {
   try {
     const { _id, name } = req.body;
