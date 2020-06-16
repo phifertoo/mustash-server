@@ -309,4 +309,84 @@ router.delete('/image', auth, async (req, res) => {
   }
 });
 
+router.post('/image', auth, async (req, res) => {
+  let existingListing = {};
+  try {
+    let form = new formidable.IncomingForm({ multiples: true });
+
+    form.keepExtensions = true;
+    form.parse(req, async (err, fields, files) => {
+      if (err) {
+        return res.status(400).json({
+          error: 'Image could not be uploaded',
+        });
+      }
+
+      if (files) {
+        const _id = fields._id;
+        existingListing = await Listing.findOne({ _id });
+
+        let availableKey = 0;
+        let keyNumber = 1;
+        let keyFound = false;
+
+        while (keyFound === false) {
+          if (
+            existingListing.s3Images[`image${keyNumber}`].name === undefined
+          ) {
+            keyFound = true;
+            availableKey = keyNumber;
+          }
+          keyNumber++;
+        }
+
+        const key =
+          Math.random().toString(36).substring(2, 15) +
+          Math.random().toString(36).substring(2, 15);
+        const uploadToS3 = (file) => {
+          let s3bucket = new AWS.S3({
+            accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+            secretAccessKey: process.env.AWS_SECRET_KEY,
+            Bucket: 'mustash01',
+          });
+          s3bucket.createBucket(() => {
+            const params = {
+              Bucket: 'mustash01',
+              Key: key,
+              ContentType: 'image/jpeg',
+              ACL: 'public-read',
+              Body: file,
+            };
+            output = s3bucket.upload(params, (err, data) => {
+              if (err) {
+                console.log(err);
+              } else {
+                console.log(data);
+              }
+            });
+          });
+        };
+        uploadToS3(fs.readFileSync(files.newImage.path));
+        existingListing.s3Images[`image${availableKey}`] = '';
+        existingListing.s3Images[
+          `image${availableKey}`
+        ].url = `https://mustash01.s3-us-west-1.amazonaws.com/${key}`;
+        existingListing.s3Images[`image${availableKey}`].name = key;
+      }
+
+      existingListing.save((err, result) => {
+        if (err) {
+          return res.status(400).json({
+            error: 'database error',
+          });
+        }
+        res.json(result);
+      });
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 module.exports = router;
