@@ -1,11 +1,11 @@
-const express = require("express");
+const express = require('express');
 const app = express();
-const path = require("path");
-const mongoose = require("mongoose");
+const path = require('path');
+const mongoose = require('mongoose');
 /* .env.process is a global variable that is injected at runtime. To 
 add to the global variable, you must npm install dotenv and 
 require("dotenv").config()*/
-require("dotenv").config();
+require('dotenv').config();
 
 //connect mongoDB using mongoose
 const connectDB = async () => {
@@ -17,7 +17,7 @@ const connectDB = async () => {
       useCreateIndex: true,
       useFindAndModify: false,
     });
-    console.log("MongoDB connected...");
+    console.log('MongoDB connected...');
   } catch (err) {
     console.error(err.message);
     /* exit process if failure*/
@@ -29,10 +29,11 @@ connectDB();
 
 app.use(express.json({ extended: false }));
 
-app.use("/api/geocoding", require("./routes/api/geocoding"));
-app.use("/api/users", require("./routes/api/users"));
-app.use("/api/auth", require("./routes/api/auth"));
-app.use("/api/listing", require("./routes/api/listings"));
+app.use('/api/geocoding', require('./routes/api/geocoding'));
+app.use('/api/users', require('./routes/api/users'));
+app.use('/api/auth', require('./routes/api/auth'));
+app.use('/api/listing', require('./routes/api/listings'));
+app.use('/api/ratings', require('./routes/api/ratings'));
 
 /* Setting up the server. Proccess.env.PORT looks for environment variable called PORT.
 Since the app is served by Heroku, Heroku will look in process.env.PORT to serve 

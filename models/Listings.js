@@ -1,11 +1,17 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const ListingsSchema = new mongoose.Schema({
-  user: {
+  // user: {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   // tells mongoose to use the User model
+  //   ref: "user",
+  // },
+  seller: {
     type: mongoose.Schema.Types.ObjectId,
     // tells mongoose to use the User model
-    ref: "user",
+    ref: 'user',
   },
+  renter: { type: String },
   typeString: { type: String, required: true },
   size: {
     length: { type: String, required: true },
@@ -22,7 +28,7 @@ const ListingsSchema = new mongoose.Schema({
   location: {
     type: {
       type: String, // Don't do `{ location: { type: String } }`
-      enum: ["Point"], // 'location.type' must be 'Point'
+      enum: ['Point'], // 'location.type' must be 'Point'
       required: true,
     },
     coordinates: {
@@ -59,10 +65,38 @@ const ListingsSchema = new mongoose.Schema({
       url: { type: String },
     },
   },
+  ratings: [
+    {
+      renter: {
+        type: String,
+      },
+      rating: {
+        type: Number,
+      },
+      date: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+  ],
+  comments: [
+    {
+      renter: {
+        type: String,
+      },
+      comments: {
+        type: String,
+      },
+      date: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+  ],
 });
 
 // create the geolocation indexing in mongodb
 // https://medium.com/@galford151/mongoose-geospatial-queries-with-near-59800b79c0f6
-ListingsSchema.index({ location: "2dsphere" });
+ListingsSchema.index({ location: '2dsphere' });
 
-module.exports = Listings = mongoose.model("listings", ListingsSchema);
+module.exports = Listings = mongoose.model('listings', ListingsSchema);

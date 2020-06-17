@@ -63,7 +63,8 @@ router.post('/', auth, async (req, res) => {
       const { lat, lng } = geocode.data.results[0].locations[0].latLng;
       const user = req.user.user;
       const input = {
-        user,
+        seller: user,
+        renter: '',
         addressString,
         typeString,
         size: { length, width, height },
@@ -80,9 +81,10 @@ router.post('/', auth, async (req, res) => {
         },
       };
 
+      let s3Images = {};
+
       //____________________________________________________________________upload images to s3____________________________
       if (files) {
-        let s3Images = {};
         let key = 0;
 
         Object.keys(files).map((element) => {
@@ -140,6 +142,7 @@ router.post('/', auth, async (req, res) => {
       listing.s3Images = s3Images;
       listing.save((err, result) => {
         if (err) {
+          console.log(err);
           return res.status(400).json({
             error: 'database error',
           });
@@ -421,9 +424,8 @@ router.post('/image', auth, async (req, res) => {
 // POST api/listing/:seller_id
 
 router.get('/:seller_id', auth, async (req, res) => {
-  console.log(req.params.seller_id);
   try {
-    const listings = await Listing.find({ user: req.params.seller_id });
+    const listings = await Listing.find({ seller: req.params.seller_id });
     res.json(listings);
   } catch (err) {
     console.error(err.message);
