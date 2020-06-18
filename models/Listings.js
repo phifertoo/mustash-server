@@ -84,7 +84,7 @@ const ListingsSchema = new mongoose.Schema({
       renter: {
         type: String,
       },
-      comments: {
+      comment: {
         type: String,
       },
       date: {

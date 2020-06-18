@@ -4,16 +4,17 @@ const auth = require('../../middleware/auth');
 const Listing = require('../../models/Listings');
 
 // PRIVATE
-// purpose: add a rating to a listing
-// POST api/ratings/:listing_Id
+// purpose: add a comment to a listing
+// POST api/comments/:commend_id
 
 router.post('/:listing_id', auth, async (req, res) => {
   try {
-    const rating = req.body.rating;
+    const comment = req.body.comment;
     listing_id = req.params.listing_id;
     let existingListing = await Listing.findOne({ _id: listing_id });
     if (existingListing) {
-      existingListing.ratings.push(rating);
+      existingListing.comments.push(comment);
+      console.log(existingListing.comments);
       existingListing.save((err, result) => {
         if (err) {
           return res.status(400).json({
@@ -30,21 +31,21 @@ router.post('/:listing_id', auth, async (req, res) => {
 });
 
 // PRIVATE
-// purpose: add a rating to a listing
-// POST api/ratings/:listing_Id/:rating_id
+// purpose: add a cmment to a listing
+// POST api/comments/:listing_Id/:comment_id
 
-router.post('/:listing_id/:rating_id', auth, async (req, res) => {
+router.post('/:listing_id/:comment_id', auth, async (req, res) => {
   try {
-    const rating = req.body.rating;
+    const comment = req.body.comment;
     const listing_id = req.params.listing_id;
-    const rating_id = req.params.rating_id;
+    const comment_id = req.params.comment_id;
     let existingListing = await Listing.findOne({ _id: listing_id });
-    const ratings = existingListing.ratings;
+    const comments = existingListing.comments;
 
     if (existingListing) {
-      const index = ratings.findIndex((element) => element._id === rating_id);
-      ratings.splice(index, 1);
-      ratings.push(rating);
+      const index = comments.findIndex((element) => element._id === comment_id);
+      comments.splice(index, 1);
+      comments.push(comment);
 
       existingListing.save((err, result) => {
         if (err) {
@@ -62,19 +63,19 @@ router.post('/:listing_id/:rating_id', auth, async (req, res) => {
 });
 
 // PRIVATE
-// purpose: add a rating to a listing
-// POST api/ratings/:listing_Id/:rating_id
+// purpose: add a comment to a listing
+// POST api/comments/:listing_Id/:comment_id
 
-router.delete('/:listing_id/:rating_id', auth, async (req, res) => {
+router.delete('/:listing_id/:comment_id', auth, async (req, res) => {
   try {
     const listing_id = req.params.listing_id;
-    const rating_id = req.params.rating_id;
+    const comment_id = req.params.comment_id;
     let existingListing = await Listing.findOne({ _id: listing_id });
-    const ratings = existingListing.ratings;
+    const comments = existingListing.comments;
 
     if (existingListing) {
-      const index = ratings.findIndex((element) => element._id === rating_id);
-      ratings.splice(index, 1);
+      const index = comments.findIndex((element) => element._id === comment_id);
+      comments.splice(index, 1);
 
       existingListing.save((err, result) => {
         if (err) {
