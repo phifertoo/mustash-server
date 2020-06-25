@@ -14,7 +14,6 @@ router.post('/:listing_id', auth, async (req, res) => {
     let existingListing = await Listing.findOne({ _id: listing_id });
     if (existingListing) {
       existingListing.comments.push(comment);
-      console.log(existingListing.comments);
       existingListing.save((err, result) => {
         if (err) {
           return res.status(400).json({

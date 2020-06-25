@@ -82,7 +82,6 @@ router.post('/', auth, async (req, res) => {
       };
 
       let s3Images = {};
-
       //____________________________________________________________________upload images to s3____________________________
       if (files) {
         let key = 0;
@@ -421,7 +420,7 @@ router.post('/image', auth, async (req, res) => {
 
 // PRVATE
 // purpose: add image
-// POST api/listing/:seller_id
+// GET api/listing/:seller_id
 
 router.get('/:seller_id', auth, async (req, res) => {
   try {

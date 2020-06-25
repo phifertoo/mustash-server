@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+const cors = require('cors');
 const path = require('path');
 const mongoose = require('mongoose');
 /* .env.process is a global variable that is injected at runtime. To 
@@ -27,6 +28,7 @@ const connectDB = async () => {
 
 connectDB();
 
+app.use(cors({ origin: 'http://localhost:3000' }));
 app.use(express.json({ extended: false }));
 
 app.use('/api/geocoding', require('./routes/api/geocoding'));
