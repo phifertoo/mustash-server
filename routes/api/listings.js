@@ -6,6 +6,10 @@ const formidable = require('formidable');
 const fs = require('fs');
 const axios = require('axios');
 const AWS = require('aws-sdk');
+AWS.config.update({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_KEY,
+});
 
 // PRIVATE
 // purpose:list a storage space
@@ -81,7 +85,8 @@ router.post('/', auth, async (req, res) => {
         },
       };
 
-      let s3Images = {};
+      // let s3Images = {};
+      let imageArray = [];
       //____________________________________________________________________upload images to s3____________________________
       if (files) {
         let key = 0;
@@ -114,31 +119,30 @@ router.post('/', auth, async (req, res) => {
             });
           };
           uploadToS3(fs.readFileSync(files[element].path));
-          s3Images[element] = {};
-          s3Images[
-            element
-          ].url = `https://mustash01.s3-us-west-1.amazonaws.com/${key}`;
-          s3Images[element].name = key;
+
+          imageArray.push({
+            name: key,
+            url: `https://mustash01.s3-us-west-1.amazonaws.com/${key}`,
+          });
         });
       }
 
       //____________________________________________________________________saving listing to mongoDB (includes image)____________________________
 
       const listing = new Listing(input);
-      if (files) {
-        // if (files.size > 1000000) {
-        //   return res.status(400).json({
-        //     error: "Image should be less than 1mb in size",
-        //   });
-        // }
-        Object.keys(files).map((element) => {
-          //returns the contents at the blob path
-          listing.images[element].data = fs.readFileSync(files[element].path);
-          listing.images[element].contentType = files[element].type;
-        });
-      }
-      //add image paths from S3 to the listing
-      listing.s3Images = s3Images;
+      // if (files) {
+      // if (files.size > 1000000) {
+      //   return res.status(400).json({
+      //     error: "Image should be less than 1mb in size",
+      //   });
+      // }
+      //   Object.keys(files).map((element) => {
+      //     //returns the contents at the blob path
+      //     listing.images[element].data = fs.readFileSync(files[element].path);
+      //     listing.images[element].contentType = files[element].type;
+      //   });
+      // }
+      listing.imageArray = imageArray;
       listing.save((err, result) => {
         if (err) {
           console.log(err);
@@ -217,22 +221,6 @@ router.get('/me', async (req, res) => {
   }
 });
 
-// PUBLIC
-// purpose: return images from search by id of the listings
-// GET api/listing/images/:id
-
-// router.get("/images/:id", async (req, res) => {
-//   try {
-//     //returns the location of the user
-//     const listing = await Listing.findById(req.params.id);
-
-//     res.send(listing.images);
-//   } catch (err) {
-//     console.error(err.message);
-//     res.status(500).send("Server Error");
-//   }
-// });
-
 // PRVATE
 // purpose: update listing
 // POST api/listing/update
@@ -307,16 +295,13 @@ router.delete('/', auth, async (req, res) => {
 router.delete('/image', auth, async (req, res) => {
   try {
     const { _id, name } = req.body;
-
     let existingListing = await Listing.findOne({ _id });
-    const existingS3Images = existingListing.s3Images;
-    //____________________________________________________________________saving listing to mongoDB (includes image)____________________________
+    // const existingS3Images = existingListing.s3Images;
     if (existingListing) {
-      Object.keys(existingS3Images).forEach((element) => {
-        if (existingS3Images[element].name === name) {
-          existingListing.s3Images[element] = undefined;
-        }
-      });
+      const imageArray = existingListing.imageArray;
+      const index = imageArray.findIndex((element) => element.name === name);
+      imageArray.splice(index, 1);
+      existingListing.imageArray = imageArray;
     }
 
     existingListing.save((err, result) => {
@@ -327,7 +312,17 @@ router.delete('/image', auth, async (req, res) => {
       }
       res.json(result);
     });
-    //add image paths from S3 to the listing
+
+    //delete file from S3
+    var params = {
+      Bucket: 'mustash01',
+      Key: name,
+    };
+    const s3 = new AWS.S3();
+    s3.deleteObject(params, (err, data) => {
+      if (err) console.log(err, err.stack);
+      else console.log(data); // successful response
+    });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');

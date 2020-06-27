@@ -65,6 +65,14 @@ const ListingsSchema = new mongoose.Schema({
       url: { type: String },
     },
   },
+  imageArray: {
+    type: [
+      {
+        name: { type: String },
+        url: { type: String },
+      },
+    ],
+  },
   ratings: [
     {
       renter: {

@@ -1,10 +1,10 @@
-const jwt = require("jsonwebtoken");
+const jwt = require('jsonwebtoken');
 
 module.exports = function (req, res, next) {
   //retrieve the token from the header
-  const token = req.header("x-auth-token");
+  const token = req.header('x-auth-token');
   if (!token) {
-    return res.status(401).json({ msg: "No token, authorization denied" });
+    return res.status(401).json({ msg: 'No token, authorization denied' });
   }
   try {
     //decode the token using the secret. the token contains the user data
@@ -14,6 +14,6 @@ module.exports = function (req, res, next) {
     //call the next function
     next();
   } catch (err) {
-    res.status(401).json({ msg: "Token is not valid" });
+    res.status(401).json({ msg: 'Token is not valid' });
   }
 };
