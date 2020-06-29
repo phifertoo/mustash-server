@@ -130,12 +130,6 @@ router.post('/', auth, async (req, res) => {
       //____________________________________________________________________saving listing to mongoDB (includes image)____________________________
 
       const listing = new Listing(input);
-      // if (files) {
-      // if (files.size > 1000000) {
-      //   return res.status(400).json({
-      //     error: "Image should be less than 1mb in size",
-      //   });
-      // }
       //   Object.keys(files).map((element) => {
       //     //returns the contents at the blob path
       //     listing.images[element].data = fs.readFileSync(files[element].path);
@@ -330,11 +324,10 @@ router.delete('/image', auth, async (req, res) => {
 });
 
 // PRVATE
-// purpose: add image
+// purpose: add images
 // POST api/listing/image
 
-router.post('/image', auth, async (req, res) => {
-  let existingListing = {};
+router.post('/images', auth, async (req, res) => {
   try {
     let form = new formidable.IncomingForm({ multiples: true });
 
@@ -348,64 +341,53 @@ router.post('/image', auth, async (req, res) => {
 
       if (files) {
         const _id = fields._id;
-        existingListing = await Listing.findOne({ _id });
+        const existingListing = await Listing.findOne({ _id });
 
-        let availableKey = 0;
-        let keyNumber = 1;
-        let keyFound = false;
+        Object.keys(files).map((element) => {
+          const key =
+            Math.random().toString(36).substring(2, 15) +
+            Math.random().toString(36).substring(2, 15);
 
-        while (keyFound === false) {
-          if (
-            existingListing.s3Images[`image${keyNumber}`].name === undefined
-          ) {
-            keyFound = true;
-            availableKey = keyNumber;
-          }
-          keyNumber++;
-        }
-
-        const key =
-          Math.random().toString(36).substring(2, 15) +
-          Math.random().toString(36).substring(2, 15);
-        const uploadToS3 = (file) => {
-          let s3bucket = new AWS.S3({
-            accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-            secretAccessKey: process.env.AWS_SECRET_KEY,
-            Bucket: 'mustash01',
-          });
-          s3bucket.createBucket(() => {
-            const params = {
+          const uploadToS3 = (file) => {
+            let s3bucket = new AWS.S3({
+              accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+              secretAccessKey: process.env.AWS_SECRET_KEY,
               Bucket: 'mustash01',
-              Key: key,
-              ContentType: 'image/jpeg',
-              ACL: 'public-read',
-              Body: file,
-            };
-            output = s3bucket.upload(params, (err, data) => {
-              if (err) {
-                console.log(err);
-              } else {
-                console.log(data);
-              }
             });
-          });
-        };
-        uploadToS3(fs.readFileSync(files.newImage.path));
-        existingListing.s3Images[`image${availableKey}`] = '';
-        existingListing.s3Images[
-          `image${availableKey}`
-        ].url = `https://mustash01.s3-us-west-1.amazonaws.com/${key}`;
-        existingListing.s3Images[`image${availableKey}`].name = key;
-      }
+            s3bucket.createBucket(() => {
+              const params = {
+                Bucket: 'mustash01',
+                Key: key,
+                ContentType: 'image/jpeg',
+                ACL: 'public-read',
+                Body: file,
+              };
+              s3bucket.upload(params, (err, data) => {
+                if (err) {
+                  console.log(err);
+                } else {
+                  console.log(data);
+                }
+              });
+            });
+          };
+          uploadToS3(fs.readFileSync(files[element].path));
 
-      existingListing.save((err, result) => {
-        if (err) {
-          return res.status(400).json({
-            error: 'database error',
+          existingListing.imageArray.push({
+            name: key,
+            url: `https://mustash01.s3-us-west-1.amazonaws.com/${key}`,
           });
-        }
-        res.json(result);
-      });
+        });
+
+        existingListing.save((err, result) => {
+          if (err) {
+            return res.status(400).json({
+              error: 'database error',
+            });
+          }
+          res.json(result);
+        });
+      }
     });
   } catch (err) {
     console.error(err.message);
@@ -415,12 +397,27 @@ router.post('/image', auth, async (req, res) => {
 
 // PRVATE
 // purpose: add image
-// GET api/listing/:seller_id
+// GET api/listing/seller/:seller_id
 
-router.get('/:seller_id', auth, async (req, res) => {
+router.get('/seller/:seller_id', auth, async (req, res) => {
   try {
     const listings = await Listing.find({ seller: req.params.seller_id });
     res.json(listings);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// PRVATE
+// purpose: add image
+// GET api/listing/:listing_id
+
+router.get('/:listing_id', auth, async (req, res) => {
+  try {
+    const listing = await Listing.findOne({ _id: req.params.listing_id });
+    console.log(req.params.listing_id, listing);
+    res.json(listing);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
