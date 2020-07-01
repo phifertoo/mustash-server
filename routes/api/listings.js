@@ -416,7 +416,6 @@ router.get('/seller/:seller_id', auth, async (req, res) => {
 router.get('/:listing_id', auth, async (req, res) => {
   try {
     const listing = await Listing.findOne({ _id: req.params.listing_id });
-    console.log(req.params.listing_id, listing);
     res.json(listing);
   } catch (err) {
     console.error(err.message);
