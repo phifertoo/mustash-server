@@ -38,6 +38,7 @@ app.use('/api/listing', require('./routes/api/listings'));
 app.use('/api/ratings', require('./routes/api/ratings'));
 app.use('/api/comments', require('./routes/api/comments'));
 app.use('/api/reserve', require('./routes/api/reserve'));
+app.use('/api/renter', require('./routes/api/renter'));
 
 /* Setting up the server. Proccess.env.PORT looks for environment variable called PORT.
 Since the app is served by Heroku, Heroku will look in process.env.PORT to serve 
