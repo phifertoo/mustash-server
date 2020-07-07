@@ -20,4 +20,21 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
+// export const resetSelectedRental = (input) => async (dispatch) => {
+//   const config = {
+//     headers: {
+//       'Content-Type': 'application/json',
+//       'x-auth-token': input.token,
+//     },
+//   };
+//   try {
+//     const res = await axios.get(`/api/rental/${input._id}`, config);
+//     dispatch({ type: 'RESETSELECTEDRENTAL_SUCCESS', payload: res.data });
+//   } catch (err) {
+//     dispatch({ type: 'RESETSELECTEDRENTAL_FAIL' });
+
+//     console.log(err);
+//   }
+// };
+
 module.exports = router;

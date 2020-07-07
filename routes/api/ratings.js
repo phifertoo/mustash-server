@@ -9,18 +9,27 @@ const Listing = require('../../models/Listings');
 
 router.post('/:listing_id', auth, async (req, res) => {
   try {
-    const rating = req.body.rating;
+    const rating = {
+      rating: req.body.rating,
+      renter: req.user.user,
+    };
     listing_id = req.params.listing_id;
     let existingListing = await Listing.findOne({ _id: listing_id });
+
     if (existingListing) {
       existingListing.ratings.push(rating);
-      existingListing.save((err, result) => {
+      existingListing.save(async (err, result) => {
         if (err) {
           return res.status(400).json({
             error: 'database error',
           });
         }
-        res.json(result);
+        const myRentals = await Listing.find({ renter: req.user.user });
+        const input = {
+          myRentals,
+          result,
+        };
+        res.json(input);
       });
     }
   } catch (err) {
@@ -30,7 +39,7 @@ router.post('/:listing_id', auth, async (req, res) => {
 });
 
 // PRIVATE
-// purpose: add a rating to a listing
+// purpose: update a rating to a listing
 // POST api/ratings/:listing_Id/:rating_id
 
 router.post('/:listing_id/:rating_id', auth, async (req, res) => {

@@ -8,25 +8,31 @@ const Listing = require('../../models/Listings');
 // POST api/comments/:commend_id
 
 router.post('/:listing_id', auth, async (req, res) => {
-  console.log('hello');
   try {
     const commentObject = {};
     commentObject.comment = req.body.comment;
     commentObject.renter = req.user.user;
     const listing_id = req.params.listing_id;
-    console.log(commentObject, listing_id);
+    const user = await User.findOne({ _id: req.user.user });
+    commentObject.name = user.name;
+    commentObject.avatarURL - user.avatarURL;
 
     let existingListing = await Listing.findOne({ _id: listing_id });
     // console.log(commentObject, existingListing);
     if (existingListing) {
       existingListing.comments.push(commentObject);
-      existingListing.save((err, result) => {
+      existingListing.save(async (err, result) => {
         if (err) {
           return res.status(400).json({
             error: 'database error',
           });
         }
-        res.json(result);
+        const myRentals = await Listing.find({ renter: req.user.user });
+        const input = {
+          myRentals,
+          result,
+        };
+        res.json(input);
       });
     }
   } catch (err) {

@@ -92,6 +92,12 @@ const ListingsSchema = new mongoose.Schema({
       renter: {
         type: String,
       },
+      name: {
+        type: String,
+      },
+      avatarURL: {
+        type: String,
+      },
       comment: {
         type: String,
       },
