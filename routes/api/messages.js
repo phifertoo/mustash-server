@@ -29,6 +29,7 @@ router.post('/:recipient_id', auth, async (req, res) => {
           message: newMessage,
           sender: sender_id,
           recipient: recipient_id,
+          read: true,
         },
       ],
     });
@@ -43,6 +44,7 @@ router.post('/:recipient_id', auth, async (req, res) => {
           message: newMessage,
           sender: sender_id,
           recipient: recipient_id,
+          read: false,
         },
       ],
     });
@@ -93,6 +95,7 @@ router.post('/reply/:recipient_id/:conversation_id', auth, async (req, res) => {
       message: newMessage,
       sender: sender_id,
       recipient: recipient_id,
+      read: true,
     });
 
     const recipient = await User.findOne({ _id: recipient_id });
@@ -105,6 +108,7 @@ router.post('/reply/:recipient_id/:conversation_id', auth, async (req, res) => {
         message: newMessage,
         sender: sender_id,
         recipient: recipient_id,
+        read: false,
       });
     } else {
       recipient.conversations.push({
@@ -115,6 +119,7 @@ router.post('/reply/:recipient_id/:conversation_id', auth, async (req, res) => {
             message: newMessage,
             sender: sender_id,
             recipient: recipient_id,
+            read: false,
           },
         ],
       });
@@ -145,7 +150,22 @@ router.post('/reply/:recipient_id/:conversation_id', auth, async (req, res) => {
   }
 });
 
-// route: POST http://localhost:5000/api/messages/:conversation_id
+// route: GET http://localhost:5000/api/messages/
+// description: delete conversation
+// access: private
+
+router.get('/', auth, async (req, res) => {
+  try {
+    const user_id = req.user.user;
+    const user = await User.findOne({ _id: user_id });
+    res.json(user.conversations);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// route: DELETE http://localhost:5000/api/messages/:conversation_id
 // description: delete conversation
 // access: private
 

@@ -15,13 +15,19 @@ const UserSchema = new mongoose.Schema({
   conversations: [
     {
       _id: { type: String, required: true },
-      deleted: { type: Boolean },
       messages: [
         {
           _id: { type: String, required: true },
           message: { type: String, required: true },
           sender: { type: String, required: true },
+          senderName: { type: String },
           recipient: { type: String, required: true },
+          recipientName: { type: String },
+          read: { type: Boolean },
+          date: {
+            type: Date,
+            default: Date.now,
+          },
         },
       ],
     },
