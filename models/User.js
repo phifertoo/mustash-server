@@ -12,6 +12,20 @@ const UserSchema = new mongoose.Schema({
     URL: { type: String },
     key: { type: String },
   },
+  conversations: [
+    {
+      _id: { type: String, required: true },
+      deleted: { type: Boolean },
+      messages: [
+        {
+          _id: { type: String, required: true },
+          message: { type: String, required: true },
+          sender: { type: String, required: true },
+          recipient: { type: String, required: true },
+        },
+      ],
+    },
+  ],
 });
 
 module.exports = User = mongoose.model('user', UserSchema);
